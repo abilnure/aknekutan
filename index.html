@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Акнекутан">
+<meta name="theme-color" content="#f5f5f3">
+<title>Акнекутан</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#f5f5f3; --white:#ffffff;
+  --border:#e4e4e0; --border2:#d0d0ca;
+  --text:#111111; --muted:#888884; --muted2:#c8c8c2;
+  --green:#1f8c55; --green-bg:#f0faf5; --green-bd:#b6e5cf;
+  --amber:#b45309; --amber-bg:#fffbeb; --amber-bd:#fcd34d;
+  --indigo:#4338ca; --indigo-bg:#f0f0ff; --indigo-bd:#c7c7f8;
+  --red:#c0392b;
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+html,body{height:100%;background:#f5f5f3;}
+body{background:var(--bg);color:var(--text);font-family:'Geist',-apple-system,sans-serif;font-size:14px;line-height:1.5;padding-bottom:calc(48px + var(--safe));min-height:100vh;min-height:100dvh;}
+.page{max-width:430px;margin:0 auto;padding:0 20px;}
+
+/* HEADER — только название */
+.hd{padding:52px 0 20px;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.hd-name{font-size:17px;font-weight:600;letter-spacing:-.3px;}
+.hd-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* BANNER */
+.banner{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:var(--white);margin-bottom:16px;font-size:12px;}
+.banner.ok{border-color:var(--green-bd);background:var(--green-bg);}
+.banner.ok .bt{color:var(--green);}
+.banner.fail{border-color:#fecaca;background:#fff5f5;}
+.banner.fail .bt{color:var(--red);}
+.bi{font-size:15px;flex-shrink:0;}
+.bt{flex:1;color:var(--muted);line-height:1.4;}
+.bb{flex-shrink:0;background:var(--text);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:opacity .15s;}
+.bb:hover{opacity:.75;}
+
+/* DOSE CARDS */
+.doses{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.dc{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 18px 16px;transition:border-color .2s,background .2s;}
+.dc.active{border-color:var(--dc-bd);background:var(--dc-bg);}
+.dc.done{border-color:var(--green-bd);background:var(--green-bg);}
+.dc.morning{--dc-bg:var(--amber-bg);--dc-bd:var(--amber-bd);--dc-clr:var(--amber);}
+.dc.evening{--dc-bg:var(--indigo-bg);--dc-bd:var(--indigo-bd);--dc-clr:var(--indigo);}
+
+.dc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.dc-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:500;}
+.dc-time{font-size:28px;font-weight:300;letter-spacing:-1.5px;line-height:1;margin-top:2px;}
+
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid;white-space:nowrap;}
+.badge.pend{color:var(--muted2);border-color:var(--border2);}
+.badge.now{color:var(--dc-clr);border-color:var(--dc-bd);animation:bp 2s infinite;}
+.badge.good{color:var(--green);border-color:var(--green-bd);background:var(--green-bg);}
+.badge.closed{color:var(--muted2);border-color:var(--border);}
+@keyframes bp{0%,100%{opacity:1}50%{opacity:.5}}
+
+.cbtn{width:100%;padding:11px;border-radius:9px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);transition:all .15s;letter-spacing:-.2px;}
+.dc.active .cbtn{background:var(--dc-clr);border-color:var(--dc-clr);color:#fff;}
+.dc.done .cbtn{background:var(--green-bg);border-color:var(--green-bd);color:var(--green);cursor:default;}
+.cbtn:hover:not(:disabled){opacity:.82;transform:translateY(-1px);}
+.cbtn:active:not(:disabled){transform:scale(.99);}
+.cbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin-bottom:20px;}
+
+/* HISTORY TOGGLE */
+.hist-toggle{display:flex;align-items:center;justify-content:space-between;user-select:none;margin-bottom:12px;padding:2px 0;gap:10px;}
+.sec{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.toggle-icon{font-size:12px;color:var(--muted);transition:transform .25s;}
+.toggle-icon.open{transform:rotate(180deg);}
+.pdf-btn{flex-shrink:0;background:transparent;border:1px solid var(--border2);border-radius:7px;padding:5px 11px;font-family:inherit;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;}
+.pdf-btn:hover{background:var(--white);color:var(--text);border-color:var(--text);}
+
+/* TABLE */
+.tbl-wrap{overflow:hidden;transition:max-height .35s ease, opacity .3s ease;max-height:0;opacity:0;}
+.tbl-wrap.visible{max-height:2000px;opacity:1;}
+
+.tbl-box{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+table{width:100%;border-collapse:collapse;}
+thead{border-bottom:1px solid var(--border);}
+th{padding:9px 10px;text-align:left;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+td{padding:10px 10px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text);}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--bg);}
+.cg{color:var(--green);font-weight:500;}
+.cm{color:var(--muted2);}
+.ca{color:var(--amber);}
+.cd{color:var(--muted);font-size:10px;}
+.etd{padding:28px 14px;text-align:center;color:var(--muted);}
+tfoot td{padding:10px 10px;font-size:12px;background:var(--bg);border-top:2px solid var(--border);color:var(--text);font-weight:600;}
+
+
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.overlay.show{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px calc(24px + var(--safe));width:100%;max-width:430px;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,1,.5,1);}
+.overlay.show .modal{transform:translateY(0);}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+.modal-row{display:flex;gap:8px;margin-bottom:16px;}
+.toggle-pill{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s;text-align:center;}
+.toggle-pill.sel-yes{background:var(--green-bg);border-color:var(--green-bd);color:var(--green);}
+.toggle-pill.sel-no{background:#fff5f5;border-color:#fecaca;color:var(--red);}
+.dose-input-wrap{margin-bottom:20px;}
+.dose-input-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.dose-input{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:10px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);background:var(--white);outline:none;transition:border-color .15s;}
+.dose-input:focus{border-color:var(--text);}
+.modal-save{width:100%;padding:13px;border-radius:11px;background:var(--text);color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s;}
+.modal-save:hover{opacity:.85;}
+.modal-cancel{width:100%;padding:11px;border-radius:11px;background:transparent;color:var(--muted);border:none;font-family:inherit;font-size:13px;cursor:pointer;margin-top:6px;}
+/* editable cell hint */
+td.editable{cursor:pointer;}
+td.editable:hover span{text-decoration:underline;text-decoration-style:dashed;text-underline-offset:3px;}
+
+.toast{position:fixed;bottom:calc(24px + var(--safe));left:50%;transform:translateX(-50%) translateY(70px);background:var(--text);color:#fff;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:500;z-index:999;white-space:nowrap;pointer-events:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hd">
+    <div class="hd-name">Акнекутан</div>
+    <div class="hd-sub">трекер приёма · 2 раза в день</div>
+  </div>
+
+  <div class="banner" id="nb">
+    <span class="bi">🔔</span>
+    <span class="bt" id="nt">Включите уведомления — буду напоминать каждые 30 минут</span>
+    <button class="bb" id="nbtn" onclick="reqNotif()">Включить</button>
+  </div>
+
+  <div class="doses">
+    <div class="dc morning" id="cm">
+      <div class="dc-top">
+        <div>
+          <div class="dc-lbl">Утро</div>
+          <div class="dc-time">09:00–12:00</div>
+        </div>
+        <div class="badge pend" id="bm">ожидание</div>
+      </div>
+      <button class="cbtn" id="btnm" onclick="confirm_('morning',event)">Подтвердить приём · 16 мг</button>
+    </div>
+
+    <div class="dc evening" id="ce">
+      <div class="dc-top">
+        <div>
+          <div class="dc-lbl">Вечер</div>
+          <div class="dc-time">21:00–00:00</div>
+        </div>
+        <div class="badge pend" id="be">ожидание</div>
+      </div>
+      <button class="cbtn" id="btne" onclick="confirm_('evening',event)">Подтвердить приём · 16 мг</button>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <div class="hist-toggle">
+    <div onclick="toggleHistory()" style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;">
+      <div class="sec">История приёма</div>
+      <span class="toggle-icon" id="toggleIcon">▼</span>
+    </div>
+    <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
+  </div>
+
+  <div class="tbl-wrap" id="tblWrap">
+    <div class="tbl-box">
+      <table>
+        <thead>
+          <tr>
+            <th>День</th>
+            <th>Дата</th>
+            <th>Утро</th>
+            <th>Вечер</th>
+            <th>Итого</th>
+          </tr>
+        </thead>
+        <tbody id="hb"></tbody>
+        <tfoot id="hf"></tfoot>
+      </table>
+    </div>
+  </div>
+
+
+
+</div>
+<!-- EDIT MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Редактировать</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div class="modal-row">
+      <button class="toggle-pill" id="pillYes" onclick="selectTaken(true)">✓ Принял</button>
+      <button class="toggle-pill" id="pillNo"  onclick="selectTaken(false)">✗ Пропустил</button>
+    </div>
+    <div class="dose-input-wrap" id="doseWrap">
+      <div class="dose-input-lbl">Дозировка (мг)</div>
+      <input class="dose-input" type="number" id="doseInput" min="1" max="200" placeholder="16">
+    </div>
+    <button class="modal-save" onclick="saveEdit()">Сохранить</button>
+    <button class="modal-cancel" onclick="closeModal()">Отмена</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'acnekutan_v3';
+const MO  = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const WD  = ['вс','пн','вт','ср','чт','пт','сб'];
+const pad = n => String(n).padStart(2,'0');
+
+// ── HISTORICAL DATA (день 1 = 21.02.2026) ─────────────────
+// Пропущено: 24.02 утром, 27.02 вечером, 28.02 вечером,
+//            02.03 вечером, 03.03 утром
+const HISTORY = {
+  '2026-02-21': { morning: true,  evening: true  },
+  '2026-02-22': { morning: true,  evening: true  },
+  '2026-02-23': { morning: true,  evening: true  },
+  '2026-02-24': { morning: false, evening: true  },
+  '2026-02-25': { morning: true,  evening: true  },
+  '2026-02-26': { morning: true,  evening: true  },
+  '2026-02-27': { morning: true,  evening: false },
+  '2026-02-28': { morning: true,  evening: false },
+  '2026-03-01': { morning: true,  evening: true  },
+  '2026-03-02': { morning: true,  evening: false },
+  '2026-03-03': { morning: false, evening: true  },
+};
+const START_DATE = '2026-02-21'; // День 1
+
+// ── STORAGE ───────────────────────────────────────────────
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || { records:{} }; }
+  catch { return { records:{} }; }
+}
+function save(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
+
+function todayKey() {
+  const d = new Date();
+  return [d.getFullYear(), pad(d.getMonth()+1), pad(d.getDate())].join('-');
+}
+
+function initData() {
+  const d = load();
+  // Заполняем историю если её ещё нет
+  let changed = false;
+  for (const [date, v] of Object.entries(HISTORY)) {
+    if (!d.records[date]) {
+      d.records[date] = {
+        date,
+        morning: v.morning ? '2026-01-01T09:00:00.000Z' : null,
+        evening: v.evening ? '2026-01-01T21:00:00.000Z' : null,
+      };
+      changed = true;
+    }
+  }
+  // Сегодняшняя запись
+  const today = todayKey();
+  if (!d.records[today]) {
+    d.records[today] = { date: today, morning: null, evening: null };
+    changed = true;
+  }
+  if (changed) save(d);
+}
+
+function getToday() {
+  const d = load(), k = todayKey();
+  if (!d.records[k]) { d.records[k] = { date:k, morning:null, evening:null }; save(d); }
+  return d.records[k];
+}
+
+function markDose(dose, mg) {
+  const d = load(), k = todayKey();
+  if (!d.records[k]) d.records[k] = { date:k, morning:null, evening:null };
+  d.records[k][dose] = new Date().toISOString();
+  if (mg) d.records[k][dose+'_mg'] = mg;
+  save(d);
+}
+
+function editRecord(dateKey, dose, taken, mg) {
+  const d = load();
+  if (!d.records[dateKey]) d.records[dateKey] = { date:dateKey, morning:null, evening:null };
+  d.records[dateKey][dose] = taken ? (d.records[dateKey][dose] || new Date().toISOString()) : null;
+  d.records[dateKey][dose+'_mg'] = taken ? (mg || 16) : null;
+  save(d);
+}
+
+// ── DAY NUMBER ────────────────────────────────────────────
+function dayNumber(dateKey) {
+  const start = new Date(START_DATE);
+  const target = new Date(dateKey);
+  return Math.round((target - start) / 86400000) + 1;
+}
+
+// ── SERVICE WORKER ────────────────────────────────────────
+let sw = null;
+async function initSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    sw = await navigator.serviceWorker.register('sw.js');
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data.type === 'CONFIRM_DOSE') confirm_(e.data.dose, null, true);
+      if (e.data.type === 'CHECK_DOSE') {
+        const r = getToday();
+        e.ports[0].postMessage({ taken: !!r[e.data.dose] });
+      }
+    });
+    schedSW();
+  } catch(e) { console.warn(e); }
+}
+
+function getSlots() {
+  const b = new Date(); b.setSeconds(0,0);
+  const mk = (h,m) => { const t = new Date(b); t.setHours(h,m,0,0); return t.getTime(); };
+  const mo = [];
+  for (let h = 9; h <= 12; h++) for (const m of [0,30]) { if(h===12&&m===30) continue; mo.push(mk(h,m)); }
+  const ev = [];
+  for (let h = 21; h <= 23; h++) for (const m of [0,30]) ev.push(mk(h,m));
+  return { morning: mo, evening: ev };
+}
+
+function schedSW() {
+  if (!sw?.active) return;
+  const r = getToday(), s = getSlots();
+  sw.active.postMessage({ type:'SCHEDULE_REMINDERS', data:{
+    morningTaken: !!r.morning, eveningTaken: !!r.evening,
+    morningSlots: s.morning, eveningSlots: s.evening
+  }});
+}
+
+// ── FALLBACK ──────────────────────────────────────────────
+let ln = { morning:0, evening:0 };
+function checkFallback() {
+  if (sw) return;
+  const n = new Date(), t = n.getHours()*60+n.getMinutes(), ts = Date.now(), r = getToday();
+  if (t>=540&&t<=720&&!r.morning&&ts-ln.morning>1800000) { ln.morning=ts; pushN('morning'); }
+  if (t>=1260&&t<=1439&&!r.evening&&ts-ln.evening>1800000) { ln.evening=ts; pushN('evening'); }
+}
+function pushN(dose) {
+  if (Notification.permission !== 'granted') return;
+  const l = dose==='morning' ? 'утреннюю' : 'вечернюю';
+  const n = new Notification('💊 Акнекутан', { body:`Время принять ${l} дозу`, requireInteraction:true, tag:`ak-${dose}`, renotify:true });
+  n.onclick = () => { window.focus(); confirm_(dose,null,true); n.close(); };
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────
+async function reqNotif() {
+  const p = await Notification.requestPermission();
+  setBanner(p);
+  if (p === 'granted') schedSW();
+}
+function setBanner(p) {
+  const nb=document.getElementById('nb'), nt=document.getElementById('nt'), nbtn=document.getElementById('nbtn');
+  if (p==='granted') {
+    nb.className='banner ok'; nt.textContent='Уведомления включены — напомню каждые 30 минут'; nbtn.style.display='none';
+    setTimeout(() => { nb.style.transition='opacity .4s'; nb.style.opacity='0'; setTimeout(()=>nb.style.display='none',400); }, 2000);
+  }
+  else if (p==='denied') { nb.className='banner fail'; nt.textContent='Уведомления заблокированы — разрешите в настройках браузера'; nbtn.style.display='none'; }
+}
+
+// ── CONFIRM ───────────────────────────────────────────────
+function confirm_(dose, event, fromSW=false) {
+  const r = getToday(); if (r[dose]) return;
+  markDose(dose);
+  if (sw?.active) sw.active.postMessage({ type:'DOSE_TAKEN', data:{dose} });
+  showToast(`✓ ${dose==='morning'?'Утренняя':'Вечерняя'} доза принята — 16 мг`);
+  render();
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  const r = getToday(), n = new Date(), t = n.getHours()*60+n.getMinutes();
+  const inM = t>=540&&t<=720, afterM = t>720, inE = t>=1260;
+
+  const cm=document.getElementById('cm'), bm=document.getElementById('bm'), btnm=document.getElementById('btnm');
+  if (r.morning) {
+    cm.className='dc morning done'; bm.className='badge good'; bm.textContent='принято ✓';
+    btnm.textContent='Принято · 16 мг ✓'; btnm.disabled=true;
+  } else if (inM) {
+    cm.className='dc morning active'; bm.className='badge now'; bm.textContent='сейчас';
+    btnm.textContent='Подтвердить приём · 16 мг'; btnm.disabled=false;
+  } else if (afterM) {
+    cm.className='dc morning'; bm.className='badge closed'; bm.textContent='пропущено';
+    btnm.textContent='Окно закрыто'; btnm.disabled=true;
+  } else {
+    cm.className='dc morning'; bm.className='badge pend'; bm.textContent='ожидание';
+    btnm.textContent='Подтвердить приём · 16 мг'; btnm.disabled=false;
+  }
+
+  const ce=document.getElementById('ce'), be=document.getElementById('be'), btne=document.getElementById('btne');
+  if (r.evening) {
+    ce.className='dc evening done'; be.className='badge good'; be.textContent='принято ✓';
+    btne.textContent='Принято · 16 мг ✓'; btne.disabled=true;
+  } else if (inE) {
+    ce.className='dc evening active'; be.className='badge now'; be.textContent='сейчас';
+    btne.textContent='Подтвердить приём · 16 мг'; btne.disabled=false;
+  } else {
+    ce.className='dc evening'; be.className='badge pend'; be.textContent='ожидание';
+    btne.textContent='Подтвердить приём · 16 мг'; btne.disabled=false;
+  }
+
+  renderTable();
+}
+
+function renderTable() {
+  const d = load(), hb = document.getElementById('hb');
+  const keys = Object.keys(d.records).sort().reverse();
+  const today = todayKey();
+
+  if (!keys.length) {
+    hb.innerHTML = '<tr><td colspan="5" class="etd">Нет данных</td></tr>';
+    return;
+  }
+
+  hb.innerHTML = keys.map(k => {
+    const r = d.records[k];
+    const [y,mo,dd] = k.split('-');
+    const dt = new Date(+y, +mo-1, +dd);
+    const dateStr = `${+dd} ${MO[+mo-1]}`;
+    const wdStr = `<span class="cd">${WD[dt.getDay()]}</span>`;
+    const dayNum = dayNumber(k);
+
+    const mMg = r.morning ? (r.morning_mg || 16) : 0;
+    const eMg = r.evening ? (r.evening_mg || 16) : 0;
+
+    const mc = r.morning
+      ? `<span class="cg">${mMg} мг</span>`
+      : `<span class="cm">—</span>`;
+    const ec = r.evening
+      ? `<span class="cg">${eMg} мг</span>`
+      : `<span class="cm">—</span>`;
+
+    const tot = mMg + eMg;
+    const totCls = tot >= 32 ? 'cg' : 'text';
+    const totStr = `<span class="${totCls}" style="font-weight:600">${tot} мг</span>`;
+
+    return `<tr>
+      <td><span class="dn">${dayNum}</span></td>
+      <td>${dateStr}</td>
+      <td class="editable" onclick="openEdit('${k}','morning')">${mc}</td>
+      <td class="editable" onclick="openEdit('${k}','evening')">${ec}</td>
+      <td>${totStr}</td>
+    </tr>`;
+  }).join('');
+
+  // Summary row
+  let grandTotal = 0;
+  let grandMorning = 0;
+  let grandEvening = 0;
+  for (const k of keys) {
+    const r = d.records[k];
+    grandMorning += r.morning ? (r.morning_mg || 16) : 0;
+    grandEvening += r.evening ? (r.evening_mg || 16) : 0;
+  }
+  grandTotal = grandMorning + grandEvening;
+
+  document.getElementById('hf').innerHTML = `<tr>
+    <td colspan="2" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);">Всего</td>
+    <td style="font-weight:600;color:var(--muted)">${grandMorning} мг</td>
+    <td style="font-weight:600;color:var(--muted)">${grandEvening} мг</td>
+    <td style="font-weight:700;color:var(--text)">${grandTotal} мг</td>
+  </tr>`;
+}
+
+// ── HISTORY TOGGLE ────────────────────────────────────────
+function toggleHistory() {
+  const wrap = document.getElementById('tblWrap');
+  const icon = document.getElementById('toggleIcon');
+  const isOpen = wrap.classList.contains('visible');
+  wrap.classList.toggle('visible', !isOpen);
+  icon.classList.toggle('open', !isOpen);
+}
+
+// ── EDIT MODAL ────────────────────────────────────────────
+let editState = { key: null, dose: null, taken: false };
+
+function openEdit(dateKey, dose) {
+  const d = load();
+  const r = d.records[dateKey] || {};
+  const taken = !!r[dose];
+  const mg = r[dose+'_mg'] || 16;
+
+  const [y,mo,dd] = dateKey.split('-');
+  const dt = new Date(+y,+mo-1,+dd);
+  const doseLabel = dose === 'morning' ? 'Утро' : 'Вечер';
+  const dateLabel = `${+dd} ${MO[+mo-1]}, ${WD[dt.getDay()]}`;
+
+  editState = { key: dateKey, dose, taken };
+
+  document.getElementById('modalTitle').textContent = `${doseLabel} · ${dateLabel}`;
+  document.getElementById('modalSub').textContent = 'Нажмите на ячейку чтобы изменить данные';
+  document.getElementById('doseInput').value = mg;
+  selectTaken(taken);
+
+  document.getElementById('overlay').classList.add('show');
+}
+
+function selectTaken(val) {
+  editState.taken = val;
+  const yes = document.getElementById('pillYes');
+  const no  = document.getElementById('pillNo');
+  const doseWrap = document.getElementById('doseWrap');
+  yes.className = 'toggle-pill' + (val ? ' sel-yes' : '');
+  no.className  = 'toggle-pill' + (!val ? ' sel-no' : '');
+  doseWrap.style.display = val ? 'block' : 'none';
+}
+
+function saveEdit() {
+  const mg = parseInt(document.getElementById('doseInput').value) || 16;
+  editRecord(editState.key, editState.dose, editState.taken, mg);
+  closeModal();
+  render();
+  showToast('Изменения сохранены');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+let tt = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(tt);
+  tt = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+const p = new URLSearchParams(location.search), cp = p.get('confirm');
+if (cp==='morning'||cp==='evening') { markDose(cp); history.replaceState({},'',location.pathname); }
+
+initData();
+render();
+
+if ('Notification' in window) setBanner(Notification.permission);
+initSW();
+setInterval(() => { render(); checkFallback(); }, 10000);
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { render(); schedSW(); } });
+
+// ── BACKUP / RESTORE ──────────────────────────────────────
+function backupData() {
+  const d = load();
+  const json = JSON.stringify(d, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `акнекутан-бэкап-${date}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  showToast('💾 Бэкап сохранён');
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.records) throw new Error('Неверный формат');
+      save(data);
+      render();
+      showToast('✓ Данные восстановлены');
+    } catch {
+      showToast('Ошибка — неверный файл');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── PDF EXPORT ────────────────────────────────────────────
+function exportPDF() {
+  const d = load();
+  const keys = Object.keys(d.records).sort();
+  if (!keys.length) { showToast('Нет данных для экспорта'); return; }
+
+  const today = todayKey();
+  const rows = keys.map(k => {
+    const r = d.records[k];
+    const [y,mo,dd] = k.split('-');
+    const dt = new Date(+y,+mo-1,+dd);
+    const dateStr = `${+dd} ${MO[+mo-1]} ${y}`;
+    const wdStr = WD[dt.getDay()];
+    const dayNum = dayNumber(k);
+    const mMg = r.morning ? (r.morning_mg || 16) : 0;
+    const eMg = r.evening ? (r.evening_mg || 16) : 0;
+    const fmg = (taken, val) => taken ? val+' мг' : (k===today ? '—' : 'пропущено');
+    return { dayNum, dateStr, wdStr, morning: fmg(r.morning, mMg), evening: fmg(r.evening, eMg), total: (mMg+eMg) > 0 ? (mMg+eMg)+' мг' : '0 мг' };
+  }).reverse();
+
+  const tableRows = rows.map(r => `
+    <tr>
+      <td>${r.dayNum}</td>
+      <td>${r.dateStr}, ${r.wdStr}</td>
+      <td>${r.morning}</td>
+      <td>${r.evening}</td>
+      <td><strong>${r.total}</strong></td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>Акнекутан — История приёма</title>
+<style>
+  body{font-family:-apple-system,sans-serif;font-size:13px;color:#111;padding:32px;max-width:700px;margin:0 auto;}
+  h1{font-size:20px;font-weight:600;margin-bottom:4px;}
+  .sub{font-size:12px;color:#888;margin-bottom:24px;}
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#888;padding:8px 10px;border-bottom:2px solid #e4e4e0;}
+  td{padding:9px 10px;border-bottom:1px solid #eee;font-size:13px;}
+  tr:last-child td{border-bottom:none;}
+  .g{color:#1f8c55;} .a{color:#b45309;} .m{color:#ccc;}
+  @media print{body{padding:0;}}
+</style></head><body>
+<h1>Акнекутан</h1>
+<div class="sub">История приёма · сформировано ${new Date().toLocaleDateString('ru-RU')}</div>
+<table>
+  <thead><tr><th>#</th><th>Дата</th><th>Утро (16 мг)</th><th>Вечер (16 мг)</th><th>Итого</th></tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (win) {
+    win.onload = () => { setTimeout(() => { win.print(); }, 400); };
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+navigator.serviceWorker?.ready.then(() => schedSW());
+</script>
+</body>
+</html>
